@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#dce9df">
+<title>HDR Ledger - Keuangan</title>
+
+<style>
+:root {
+  --bg: #dce9df;
+  --green: #347b55;
+  --green-dark: #245c3d;
+  --green-soft: #b9d4c0;
+  --dark: #244333;
+  --muted: #718879;
+  --shadow: #b8c7bb;
+  --light: #fafffb;
+  --red: #bd6868;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--dark);
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 24px 18px 50px;
+}
+
+header {
+  margin-bottom: 25px;
+}
+
+header h2 {
+  margin: 0;
+  font-size: 23px;
+}
+
+header p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 7px;
+}
+
+/* SALDO */
+
+.balance-card {
+  background: linear-gradient(135deg,#347b55,#4c966b);
+  color: white;
+  padding: 25px;
+  border-radius: 24px;
+  box-shadow: 8px 8px 18px var(--shadow),
+             -8px -8px 18px var(--light);
+  margin-bottom: 22px;
+}
+
+.balance-card small {
+  opacity: .8;
+  font-size: 12px;
+}
+
+.balance {
+  font-size: 34px;
+  font-weight: bold;
+  margin: 12px 0 25px;
+  overflow-wrap: anywhere;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.summary div {
+  background: #ffffff20;
+  padding: 13px;
+  border-radius: 13px;
+}
+
+.summary span {
+  display: block;
+  font-size: 11px;
+  opacity: .8;
+  margin-bottom: 7px;
+}
+
+.summary strong {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+/* PANEL */
+
+.panel {
+  background: var(--bg);
+  padding: 22px;
+  border-radius: 20px;
+  box-shadow: 7px 7px 15px var(--shadow),
+             -7px -7px 15px var(--light);
+  margin-bottom: 22px;
+}
+
+.panel h3 {
+  margin: 0 0 18px;
+  font-size: 16px;
+}
+
+/* INPUT */
+
+label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: bold;
+  margin: 13px 0 7px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  outline: none;
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--dark);
+  box-shadow: inset 4px 4px 8px var(--shadow),
+              inset -4px -4px 8px var(--light);
+  font-size: 14px;
+}
+
+button {
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 13px;
+  transition: .2s ease;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+/* TOMBOL SIMPAN */
+
+.primary {
+  width: 100%;
+  color: white;
+  background: linear-gradient(135deg,#4c966b,#347b55);
+  box-shadow: 5px 5px 10px var(--shadow),
+             -5px -5px 10px var(--light);
+  margin-top: 17px;
+}
+
+/* TOMBOL TRANSAKSI */
+
+.buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+/* PENGELUARAN - TOMBOL UTAMA */
+
+.expense-btn {
+  background: linear-gradient(145deg,#245f3e,#17472e);
+  color: #ffffff;
+  box-shadow: 5px 5px 10px #aebfb1,
+             -5px -5px 10px #f4fff6;
+}
+
+.expense-btn:hover {
+  background: linear-gradient(145deg,#1d5134,#123d27);
+}
+
+/* PEMASUKAN - TOMBOL SEKUNDER */
+
+.income-btn {
+  background: var(--bg);
+  color: var(--green);
+  box-shadow: 5px 5px 10px var(--shadow),
+             -5px -5px 10px var(--light);
+}
+
+.income-btn:hover {
+  color: var(--green-dark);
+  background: #d3e4d7;
+}
+
+/* TRANSAKSI */
+
+.transaction {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #b8c7bb80;
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  box-shadow: 4px 4px 8px var(--shadow),
+             -4px -4px 8px var(--light);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.info strong {
+  display: block;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.info small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+.amount {
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.income {
+  color: var(--green);
+}
+
+.expense {
+  color: var(--red);
+}
+
+.delete {
+  background: none;
+  color: var(--muted);
+  font-size: 19px;
+  padding: 4px;
+}
+
+.empty {
+  text-align: center;
+  padding: 25px 5px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+@media(max-width:380px) {
+  .balance {
+    font-size: 27px;
+  }
+
+  .panel {
+    padding: 17px;
+  }
+
+  .buttons {
+    gap: 9px;
+  }
+
+  .buttons button {
+    padding: 13px 8px;
+    font-size: 12px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+  <h2>🌿 HDR Ledger</h2>
+  <p>Catatan keuangan Allen</p>
+</header>
+
+<!-- SALDO -->
+
+<section class="balance-card">
+
+  <small>SISA SALDO</small>
+
+  <div class="balance" id="balance">Rp0</div>
+
+  <div class="summary">
+
+    <div>
+      <span>Dana awal</span>
+      <strong id="funds">Rp0</strong>
+    </div>
+
+    <div>
+      <span>Total pemasukan</span>
+      <strong id="income">Rp0</strong>
+    </div>
+
+    <div>
+      <span>Total pengeluaran</span>
+      <strong id="expense">Rp0</strong>
+    </div>
+
+    <div>
+      <span>Jumlah transaksi</span>
+      <strong id="count">0</strong>
+    </div>
+
+  </div>
+</section>
+
+<!-- DANA AWAL -->
+
+<section class="panel">
+
+  <h3>Dana yang disiapkan</h3>
+
+  <label>JUMLAH DANA (RP)</label>
+
+  <input
+    type="number"
+    id="startingFunds"
+    min="0"
+    step="1"
+    placeholder=""
+  >
+
+  <button class="primary" onclick="saveFunds()">
+    Simpan dana awal
+  </button>
+
+</section>
+
+<!-- TAMBAH TRANSAKSI -->
+
+<section class="panel">
+
+  <h3>Tambah transaksi</h3>
+
+  <label>KETERANGAN</label>
+
+  <input
+    type="text"
+    id="description"
+    maxlength="70"
+    placeholder=""
+  >
+
+  <label>JUMLAH (RP)</label>
+
+  <input
+    type="number"
+    id="amount"
+    min="1"
+    step="1"
+    placeholder=""
+  >
+
+  <div class="buttons">
+
+    <button class="income-btn"
+      onclick="addTransaction('income')">
+      + Pemasukan
+    </button>
+
+    <button class="expense-btn"
+      onclick="addTransaction('expense')">
+      − Pengeluaran
+    </button>
+
+  </div>
+
+</section>
+
+<!-- RIWAYAT TRANSAKSI -->
+
+<section class="panel">
+
+  <h3>Riwayat transaksi</h3>
+
+  <div id="transactions">
+
+    <div class="empty">
+      Belum ada transaksi.
+    </div>
+
+  </div>
+
+</section>
+
+</div>
+
+<script>
+
+const KEY = "greenledger-simple";
+
+let data = {
+  funds: 0,
+  transactions: []
+};
+
+// FORMAT RUPIAH
+
+function rupiah(value) {
+
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0
+  }).format(value || 0);
+
+}
+
+// SIMPAN DATA
+
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+// AMBIL DATA
+
+function load() {
+
+  try {
+
+    const saved = JSON.parse(
+      localStorage.getItem(KEY)
+    );
+
+    if (saved && typeof saved === "object") {
+
+      data.funds = Math.max(0, Number(saved.funds) || 0);
+
+      data.transactions = Array.isArray(saved.transactions)
+        ? saved.transactions.filter(t =>
+            t &&
+            (t.type === "income" || t.type === "expense") &&
+            Number.isFinite(Number(t.amount)) &&
+            Number(t.amount) > 0 &&
+            typeof t.description === "string"
+          )
+        : [];
+
+    }
+
+  } catch (e) {
+
+    console.warn("Data tidak dapat dibaca", e);
+
+  }
+
+}
+
+// HITUNG SALDO
+
+function calculate() {
+
+  let income = 0;
+  let expense = 0;
+
+  data.transactions.forEach(t => {
+
+    if (t.type === "income") {
+      income += Number(t.amount);
+    } else {
+      expense += Number(t.amount);
+    }
+
+  });
+
+  return {
+    income,
+    expense,
+    balance: data.funds + income - expense
+  };
+
+}
+
+// TAMPILKAN DATA
+
+function render() {
+
+  const total = calculate();
+
+  document.getElementById("balance").textContent =
+    rupiah(total.balance);
+
+  document.getElementById("funds").textContent =
+    rupiah(data.funds);
+
+  document.getElementById("income").textContent =
+    rupiah(total.income);
+
+  document.getElementById("expense").textContent =
+    rupiah(total.expense);
+
+  document.getElementById("count").textContent =
+    data.transactions.length;
+
+  document.getElementById("startingFunds").value =
+    data.funds || "";
+
+  const container =
+    document.getElementById("transactions");
+
+  if (data.transactions.length === 0) {
+
+    container.innerHTML = `
+      <div class="empty">
+        Belum ada transaksi.<br>
+        Silakan tambahkan pemasukan atau pengeluaran.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  const sorted = [...data.transactions].sort(
+    (a,b) => b.id - a.id
+  );
+
+  container.innerHTML = sorted.map(t => {
+
+    const isIncome = t.type === "income";
+
+    const safeDescription = t.description.replace(
+      /[&<>"']/g,
+      c => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+      })[c]
+    );
+
+    const date = new Date(t.id).toLocaleDateString(
+      "id-ID",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }
+    );
+
+    return `
+      <div class="transaction">
+
+        <div class="icon">
+          ${isIncome ? "↙" : "↗"}
+        </div>
+
+        <div class="info">
+          <strong>${safeDescription}</strong>
+          <small>${date}</small>
+        </div>
+
+        <div class="amount ${isIncome ? "income" : "expense"}">
+          ${isIncome ? "+" : "−"}${rupiah(t.amount)}
+        </div>
+
+        <button class="delete"
+          onclick="deleteTransaction(${t.id})"
+          aria-label="Hapus transaksi">
+          ×
+        </button>
+
+      </div>
+    `;
+
+  }).join("");
+
+}
+
+// SIMPAN DANA AWAL
+
+function saveFunds() {
+
+  const value = Number(
+    document.getElementById("startingFunds").value
+  );
+
+  if (!Number.isFinite(value) || value < 0) {
+
+    alert("Masukkan jumlah dana yang valid.");
+    return;
+
+  }
+
+  data.funds = value;
+
+  save();
+  render();
+
+}
+
+// TAMBAH TRANSAKSI
+
+function addTransaction(type) {
+
+  const description =
+    document.getElementById("description").value.trim();
+
+  const amount =
+    Number(document.getElementById("amount").value);
+
+  if (!description) {
+
+    alert("Masukkan keterangan transaksi.");
+    document.getElementById("description").focus();
+    return;
+
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+
+    alert("Masukkan jumlah yang valid.");
+    document.getElementById("amount").focus();
+    return;
+
+  }
+
+  data.transactions.push({
+
+    id: Date.now(),
+    type: type,
+    description: description,
+    amount: amount
+
+  });
+
+  save();
+
+  document.getElementById("description").value = "";
+  document.getElementById("amount").value = "";
+
+  render();
+
+}
+
+// HAPUS TRANSAKSI
+
+function deleteTransaction(id) {
+
+  if (!confirm("Hapus transaksi ini?")) return;
+
+  data.transactions = data.transactions.filter(
+    t => t.id !== id
+  );
+
+  save();
+  render();
+
+}
+
+// JALANKAN APLIKASI
+
+load();
+render();
+
+</script>
+
+</body>
+</html>
