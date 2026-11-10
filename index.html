@@ -146,7 +146,8 @@ header p {
               inset 0 -1px 0 rgba(255,255,255,.12);
   backdrop-filter: blur(16px) saturate(1.35);
   -webkit-backdrop-filter: blur(16px) saturate(1.35);
-  transform: translateX(calc(var(--tab-index, 0) * (100% + 3px))) scale(.98);
+  transform: translateX(calc(var(--tab-index, 0) * (100% + 3px))) scaleX(1);
+  transform-origin: center center;
   transform-style: preserve-3d;
   backface-visibility: hidden;
   will-change: transform, filter;
@@ -162,6 +163,16 @@ header p {
   transform: translateX(-135%);
   opacity: .75;
   pointer-events: none;
+}
+
+.summary-indicator.is-shining::after {
+  animation: summarySheen .62s ease-in-out both;
+}
+
+@keyframes summarySheen {
+  from { transform: translateX(-145%); opacity: .12; }
+  45% { opacity: .9; }
+  to { transform: translateX(145%); opacity: .12; }
 }
 
 .summary-tab {
@@ -195,30 +206,7 @@ header p {
   border-radius: 14px;
   background: rgba(255,255,255,.14);
   border: 1px solid rgba(255,255,255,.12);
-  position: relative;
-  overflow: hidden;
-  perspective: 1000px;
-  transform-style: preserve-3d;
-}
-
-.summary-face {
-  position: relative;
-  width: 100%;
-  min-height: 50px;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: transform, opacity;
-}
-
-.summary-face-old {
-  position: absolute;
-  inset: 13px 15px;
-  z-index: 2;
-  pointer-events: none;
-  transform-origin: center center;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  animation: summaryReveal .32s ease both;
 }
 
 .summary-detail span {
@@ -465,10 +453,8 @@ button:active {
   </div>
 
   <div class="summary-detail" id="summaryDetail" role="tabpanel" aria-live="polite">
-    <div class="summary-face" id="summaryFace">
-      <span id="summaryLabel">Dana awal</span>
-      <strong id="summaryValue">Rp0</strong>
-    </div>
+    <span id="summaryLabel">Dana awal</span>
+    <strong id="summaryValue">Rp0</strong>
   </div>
 </section>
 
@@ -654,10 +640,9 @@ function selectSummaryTab(index) {
   const previousIndex = activeSummaryTab;
   if (nextIndex === previousIndex) return;
 
-  const tabs = document.querySelectorAll(".summary-tab");
+  const tabs = Array.from(document.querySelectorAll(".summary-tab"));
   const track = document.getElementById("summaryTabs");
   const indicator = document.getElementById("summaryIndicator");
-  const direction = nextIndex > previousIndex ? 1 : -1;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   activeSummaryTab = nextIndex;
@@ -667,36 +652,49 @@ function selectSummaryTab(index) {
     tab.tabIndex = active ? 0 : -1;
   });
 
-  // Efek kaca 3D: panel miring ke arah gerakan, lalu memantul berlawanan
-  // sebelum kembali rata. Arah rotasi dibalik saat pengguna bergerak ke kiri.
-  const step = indicator.getBoundingClientRect().width + 3;
-  const fromX = previousIndex * step;
-  const toX = nextIndex * step;
-  track.style.setProperty("--tab-index", activeSummaryTab);
+  const trackRect = track.getBoundingClientRect();
+  const indicatorBaseLeft = indicator.offsetLeft;
+  const previousRect = tabs[previousIndex].getBoundingClientRect();
+  const targetRect = tabs[nextIndex].getBoundingClientRect();
+  const fromX = previousRect.left - trackRect.left - indicatorBaseLeft;
+  const targetX = targetRect.left - trackRect.left - indicatorBaseLeft;
 
   if (indicator._slideAnimation) indicator._slideAnimation.cancel();
+
   if (reduceMotion) {
-    indicator.style.transform = "";
+    indicator.style.transform = `translateX(${targetX}px)`;
+    indicator._currentX = targetX;
   } else {
-    indicator.style.transform = `translateX(${fromX}px)`;
-    const tilt = direction * 62;
+    const delta = targetX - fromX;
+    const direction = delta >= 0 ? 1 : -1;
+    const distance = Math.abs(delta);
+    const stretch = distance > 1 ? 1.24 : 1;
+
+    indicator.style.transform = `translateX(${fromX}px) scaleX(1)`;
     indicator._slideAnimation = indicator.animate([
-      { transform: `translateX(${fromX}px) rotateY(0deg) scaleX(1)`, filter: "brightness(1)" },
-      { offset: 0.32, transform: `translateX(${fromX + (toX - fromX) * 0.42}px) rotateY(${tilt}deg) scaleX(.84)`, filter: "brightness(1.24)" },
-      { offset: 0.68, transform: `translateX(${fromX + (toX - fromX) * 0.82}px) rotateY(${-tilt * .42}deg) scaleX(1.08)`, filter: "brightness(1.12)" },
-      { transform: `translateX(${toX}px) rotateY(0deg) scaleX(1)`, filter: "brightness(1)" }
+      { offset: 0, transform: `translateX(${fromX}px) scaleX(1)`, filter: "brightness(1)" },
+      { offset: .28, transform: `translateX(${fromX + delta * .34}px) scaleX(${stretch})`, filter: "brightness(1.30)" },
+      { offset: .62, transform: `translateX(${fromX + delta * .82}px) scaleX(.88)`, filter: "brightness(1.16)" },
+      { offset: .84, transform: `translateX(${targetX + direction * 5}px) scaleX(1.06)`, filter: "brightness(1.08)" },
+      { offset: 1, transform: `translateX(${targetX}px) scaleX(1)`, filter: "brightness(1)" }
     ], {
-      duration: 760,
-      easing: "cubic-bezier(.2,.82,.22,1)",
-      fill: "none"
+      duration: 680,
+      easing: "cubic-bezier(.20,.82,.22,1)",
+      fill: "forwards"
     });
+
+    indicator._currentX = targetX;
     indicator._slideAnimation.onfinish = () => {
-      indicator.style.transform = "";
+      indicator.style.transform = `translateX(${targetX}px) scaleX(1)`;
       indicator._slideAnimation = null;
     };
+
+    indicator.classList.remove("is-shining");
+    void indicator.offsetWidth;
+    indicator.classList.add("is-shining");
   }
 
-  updateSummaryDetail(direction);
+  updateSummaryDetail(nextIndex > previousIndex ? 1 : -1);
 }
 
 function updateSummaryDetail(direction = 0) {
@@ -708,59 +706,18 @@ function updateSummaryDetail(direction = 0) {
     { label: "Total pengeluaran", value: rupiah(total.expense) },
     { label: "Jumlah transaksi", value: String(data.transactions.length) }
   ];
-  const summary = summaries[activeSummaryTab];
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const currentFace = detail.querySelector(".summary-face");
 
-  // Render biasa (misalnya setelah data transaksi berubah): tanpa animasi tab.
-  if (!direction || reduceMotion || !currentFace) {
-    detail.querySelectorAll(".summary-face-old").forEach(node => node.remove());
-    currentFace.querySelector("span").textContent = summary.label;
-    currentFace.querySelector("strong").textContent = summary.value;
-    return;
+  document.getElementById("summaryLabel").textContent =
+    summaries[activeSummaryTab].label;
+  document.getElementById("summaryValue").textContent =
+    summaries[activeSummaryTab].value;
+
+  if (direction && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    detail.animate([
+      { opacity: 0, transform: `translateX(${direction * 16}px) rotateY(${direction * -8}deg)` },
+      { opacity: 1, transform: "translateX(0) rotateY(0deg)" }
+    ], { duration: 360, easing: "cubic-bezier(.2,.8,.2,1)" });
   }
-
-  // Bersihkan animasi lama agar ketukan cepat tetap responsif.
-  detail.querySelectorAll(".summary-face-old").forEach(node => node.remove());
-
-  const oldFace = currentFace.cloneNode(true);
-  oldFace.removeAttribute("id");
-  oldFace.classList.add("summary-face-old");
-  oldFace.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
-  detail.appendChild(oldFace);
-
-  const newFace = document.createElement("div");
-  newFace.className = "summary-face";
-  const label = document.createElement("span");
-  const value = document.createElement("strong");
-  label.textContent = summary.label;
-  value.textContent = summary.value;
-  newFace.append(label, value);
-  currentFace.replaceWith(newFace);
-
-  // direction = 1 untuk maju, -1 untuk mundur: sisi lama dan baru berputar berlawanan.
-  const outAngle = direction * 88;
-  const inAngle = -direction * 88;
-
-  const outAnimation = oldFace.animate([
-    { opacity: 1, transform: "translateX(0) rotateY(0deg) scale(1)" },
-    { opacity: .15, transform: `translateX(${-direction * 54}px) rotateY(${outAngle}deg) scale(.92)` }
-  ], {
-    duration: 520,
-    easing: "cubic-bezier(.55,.05,.8,.35)",
-    fill: "forwards"
-  });
-
-  newFace.animate([
-    { opacity: .1, transform: `translateX(${direction * 54}px) rotateY(${inAngle}deg) scale(.92)` },
-    { opacity: 1, transform: "translateX(0) rotateY(0deg) scale(1)" }
-  ], {
-    duration: 720,
-    easing: "cubic-bezier(.16,.84,.24,1)",
-    fill: "both"
-  });
-
-  outAnimation.onfinish = () => oldFace.remove();
 }
 
 // TAMPILKAN DATA
