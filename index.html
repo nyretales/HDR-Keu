@@ -195,7 +195,30 @@ header p {
   border-radius: 14px;
   background: rgba(255,255,255,.14);
   border: 1px solid rgba(255,255,255,.12);
-  animation: summaryReveal .32s ease both;
+  position: relative;
+  overflow: hidden;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.summary-face {
+  position: relative;
+  width: 100%;
+  min-height: 50px;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.summary-face-old {
+  position: absolute;
+  inset: 13px 15px;
+  z-index: 2;
+  pointer-events: none;
+  transform-origin: center center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .summary-detail span {
@@ -442,8 +465,10 @@ button:active {
   </div>
 
   <div class="summary-detail" id="summaryDetail" role="tabpanel" aria-live="polite">
-    <span id="summaryLabel">Dana awal</span>
-    <strong id="summaryValue">Rp0</strong>
+    <div class="summary-face" id="summaryFace">
+      <span id="summaryLabel">Dana awal</span>
+      <strong id="summaryValue">Rp0</strong>
+    </div>
   </div>
 </section>
 
@@ -654,14 +679,14 @@ function selectSummaryTab(index) {
     indicator.style.transform = "";
   } else {
     indicator.style.transform = `translateX(${fromX}px)`;
-    const tilt = direction * 30;
+    const tilt = direction * 62;
     indicator._slideAnimation = indicator.animate([
       { transform: `translateX(${fromX}px) rotateY(0deg) scaleX(1)`, filter: "brightness(1)" },
       { offset: 0.32, transform: `translateX(${fromX + (toX - fromX) * 0.42}px) rotateY(${tilt}deg) scaleX(.84)`, filter: "brightness(1.24)" },
       { offset: 0.68, transform: `translateX(${fromX + (toX - fromX) * 0.82}px) rotateY(${-tilt * .42}deg) scaleX(1.08)`, filter: "brightness(1.12)" },
       { transform: `translateX(${toX}px) rotateY(0deg) scaleX(1)`, filter: "brightness(1)" }
     ], {
-      duration: 720,
+      duration: 760,
       easing: "cubic-bezier(.2,.82,.22,1)",
       fill: "none"
     });
@@ -683,18 +708,59 @@ function updateSummaryDetail(direction = 0) {
     { label: "Total pengeluaran", value: rupiah(total.expense) },
     { label: "Jumlah transaksi", value: String(data.transactions.length) }
   ];
+  const summary = summaries[activeSummaryTab];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const currentFace = detail.querySelector(".summary-face");
 
-  document.getElementById("summaryLabel").textContent =
-    summaries[activeSummaryTab].label;
-  document.getElementById("summaryValue").textContent =
-    summaries[activeSummaryTab].value;
-
-  if (direction && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    detail.animate([
-      { opacity: 0, transform: `translateX(${direction * 16}px) rotateY(${direction * -8}deg)` },
-      { opacity: 1, transform: "translateX(0) rotateY(0deg)" }
-    ], { duration: 360, easing: "cubic-bezier(.2,.8,.2,1)" });
+  // Render biasa (misalnya setelah data transaksi berubah): tanpa animasi tab.
+  if (!direction || reduceMotion || !currentFace) {
+    detail.querySelectorAll(".summary-face-old").forEach(node => node.remove());
+    currentFace.querySelector("span").textContent = summary.label;
+    currentFace.querySelector("strong").textContent = summary.value;
+    return;
   }
+
+  // Bersihkan animasi lama agar ketukan cepat tetap responsif.
+  detail.querySelectorAll(".summary-face-old").forEach(node => node.remove());
+
+  const oldFace = currentFace.cloneNode(true);
+  oldFace.removeAttribute("id");
+  oldFace.classList.add("summary-face-old");
+  oldFace.querySelectorAll("[id]").forEach(node => node.removeAttribute("id"));
+  detail.appendChild(oldFace);
+
+  const newFace = document.createElement("div");
+  newFace.className = "summary-face";
+  const label = document.createElement("span");
+  const value = document.createElement("strong");
+  label.textContent = summary.label;
+  value.textContent = summary.value;
+  newFace.append(label, value);
+  currentFace.replaceWith(newFace);
+
+  // direction = 1 untuk maju, -1 untuk mundur: sisi lama dan baru berputar berlawanan.
+  const outAngle = direction * 88;
+  const inAngle = -direction * 88;
+
+  const outAnimation = oldFace.animate([
+    { opacity: 1, transform: "translateX(0) rotateY(0deg) scale(1)" },
+    { opacity: .15, transform: `translateX(${-direction * 54}px) rotateY(${outAngle}deg) scale(.92)` }
+  ], {
+    duration: 520,
+    easing: "cubic-bezier(.55,.05,.8,.35)",
+    fill: "forwards"
+  });
+
+  newFace.animate([
+    { opacity: .1, transform: `translateX(${direction * 54}px) rotateY(${inAngle}deg) scale(.92)` },
+    { opacity: 1, transform: "translateX(0) rotateY(0deg) scale(1)" }
+  ], {
+    duration: 720,
+    easing: "cubic-bezier(.16,.84,.24,1)",
+    fill: "both"
+  });
+
+  outAnimation.onfinish = () => oldFace.remove();
 }
 
 // TAMPILKAN DATA
