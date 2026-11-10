@@ -136,7 +136,8 @@ header p {
   backdrop-filter: blur(22px) saturate(1.5);
   overflow: hidden;
   isolation: isolate;
-  perspective: 900px;
+  perspective: 1100px;
+  transform-style: preserve-3d;
   touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
@@ -162,9 +163,10 @@ header p {
   -webkit-backdrop-filter: blur(18px) saturate(1.8);
   backdrop-filter: blur(18px) saturate(1.8);
   transform: translate3d(0,0,0);
-  transform-origin: center;
+  transform-origin: center center;
   transform-style: preserve-3d;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   will-change: left, transform, filter;
   pointer-events: none;
   transition: left 620ms cubic-bezier(.20,1.18,.32,1);
@@ -697,13 +699,16 @@ function selectSummaryTab(index, followPointer = false) {
   // Live-follow mode: capsule tracks the finger/mouse continuously, without
   // the delayed click animation that made the previous versions feel unresponsive.
   if (followPointer) {
-    indicator._flipAnimation?.cancel();
-    indicator._flipAnimation = null;
-    indicator.style.transition = "left 90ms cubic-bezier(.22,.72,.25,1), transform 120ms ease";
+    // The capsule tracks the finger/mouse continuously, while each tab boundary
+    // crossing triggers a direction-aware 3D reverse flip.
+    indicator.style.transition = "left 85ms cubic-bezier(.22,.72,.25,1)";
     indicator.style.left = `${targetLeft}px`;
-    indicator.style.transform = "perspective(800px) rotateY(0deg) scaleX(1)";
-    indicator.classList.remove("is-shining");
-    updateSummaryDetail(previousIndex === nextIndex ? 0 : direction);
+    if (previousIndex !== nextIndex) {
+      playSummaryReverseFlip(direction);
+      updateSummaryDetail(direction);
+    } else {
+      updateSummaryDetail(0);
+    }
     return;
   }
 
@@ -744,12 +749,53 @@ function selectSummaryTab(index, followPointer = false) {
       });
     }
 
-    indicator.classList.remove("is-shining");
-    void indicator.offsetWidth;
-    indicator.classList.add("is-shining");
+    playSummaryReverseFlip(direction);
   }
 
   updateSummaryDetail(direction);
+}
+
+// Reverse-flip motion for the glass capsule. The slide position follows the
+// pointer/finger; this animation independently flips the capsule around Y.
+function playSummaryReverseFlip(direction) {
+  const indicator = document.getElementById("summaryIndicator");
+  if (!indicator || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  if (indicator._flipAnimation) {
+    const computed = getComputedStyle(indicator);
+    indicator._flipAnimation.cancel();
+    indicator._flipAnimation = null;
+  }
+
+  const sign = direction >= 0 ? 1 : -1;
+  if (typeof indicator.animate === "function") {
+    indicator._flipAnimation = indicator.animate([
+      { transform: "perspective(900px) rotateY(0deg) rotateX(0deg) scaleX(1)", filter: "brightness(1)" },
+      { offset: .24, transform: `perspective(900px) rotateY(${sign * 78}deg) rotateX(5deg) scaleX(.78)`, filter: "brightness(1.34)" },
+      { offset: .52, transform: `perspective(900px) rotateY(${sign * 178}deg) rotateX(0deg) scaleX(.90)`, filter: "brightness(1.16)" },
+      { offset: .76, transform: `perspective(900px) rotateY(${sign * 300}deg) rotateX(-3deg) scaleX(1.10)`, filter: "brightness(1.22)" },
+      { offset: 1, transform: `perspective(900px) rotateY(${sign * 360}deg) rotateX(0deg) scaleX(1)`, filter: "brightness(1)" }
+    ], {
+      duration: 460,
+      easing: "cubic-bezier(.22,.78,.24,1)",
+      fill: "none"
+    });
+    indicator._flipAnimation.onfinish = () => {
+      indicator._flipAnimation = null;
+    };
+  } else {
+    // CSS fallback: still visibly flips on browsers without the Web Animations API.
+    indicator.style.transition = "transform 220ms ease";
+    indicator.style.transform = `perspective(900px) rotateY(${sign * 22}deg) scaleX(.88)`;
+    clearTimeout(indicator._flipFallbackTimer);
+    indicator._flipFallbackTimer = setTimeout(() => {
+      indicator.style.transform = "perspective(900px) rotateY(0deg) scaleX(1)";
+    }, 120);
+  }
+
+  indicator.classList.remove("is-shining");
+  void indicator.offsetWidth;
+  indicator.classList.add("is-shining");
 }
 
 // Pointer-follow navigation:
