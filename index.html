@@ -146,11 +146,13 @@ header p {
               inset 0 -1px 0 rgba(255,255,255,.12);
   backdrop-filter: blur(16px) saturate(1.35);
   -webkit-backdrop-filter: blur(16px) saturate(1.35);
-  transform: translateX(calc(var(--tab-index, 0) * (100% + 3px))) scaleX(1);
+  left: 4px;
+  transform: perspective(760px) translateZ(0) rotateY(0deg) scaleX(1);
   transform-origin: center center;
   transform-style: preserve-3d;
   backface-visibility: hidden;
-  will-change: transform, filter;
+  -webkit-backface-visibility: hidden;
+  will-change: left, transform, filter;
   pointer-events: none;
 }
 
@@ -166,13 +168,13 @@ header p {
 }
 
 .summary-indicator.is-shining::after {
-  animation: summarySheen .62s ease-in-out both;
+  animation: summarySheen .58s ease-in-out both;
 }
 
 @keyframes summarySheen {
-  from { transform: translateX(-145%); opacity: .12; }
-  45% { opacity: .9; }
-  to { transform: translateX(145%); opacity: .12; }
+  0% { transform: translateX(-145%); opacity: .08; }
+  45% { opacity: .85; }
+  100% { transform: translateX(145%); opacity: .08; }
 }
 
 .summary-tab {
@@ -641,7 +643,6 @@ function selectSummaryTab(index) {
   if (nextIndex === previousIndex) return;
 
   const tabs = Array.from(document.querySelectorAll(".summary-tab"));
-  const track = document.getElementById("summaryTabs");
   const indicator = document.getElementById("summaryIndicator");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -652,49 +653,86 @@ function selectSummaryTab(index) {
     tab.tabIndex = active ? 0 : -1;
   });
 
-  const trackRect = track.getBoundingClientRect();
-  const indicatorBaseLeft = indicator.offsetLeft;
-  const previousRect = tabs[previousIndex].getBoundingClientRect();
-  const targetRect = tabs[nextIndex].getBoundingClientRect();
-  const fromX = previousRect.left - trackRect.left - indicatorBaseLeft;
-  const targetX = targetRect.left - trackRect.left - indicatorBaseLeft;
+  // Posisi kapsul diambil dari posisi aktual tab, bukan perkiraan lebar layar.
+  // Ini menjaga ketepatan pada Chrome, Firefox, Safari, dan browser Android.
+  const targetLeft = tabs[nextIndex].offsetLeft;
+  const computedLeft = parseFloat(getComputedStyle(indicator).left);
+  const fromLeft = Number.isFinite(computedLeft) ? computedLeft : tabs[previousIndex].offsetLeft;
+  const direction = nextIndex > previousIndex ? 1 : -1;
 
-  if (indicator._slideAnimation) indicator._slideAnimation.cancel();
+  if (indicator._slideAnimation) {
+    indicator._slideAnimation.cancel();
+    indicator._slideAnimation = null;
+  }
+
+  // Simpan posisi aktual sebelum animasi baru dimulai, termasuk saat ketukan cepat.
+  indicator.style.left = fromLeft + "px";
 
   if (reduceMotion) {
-    indicator.style.transform = `translateX(${targetX}px)`;
-    indicator._currentX = targetX;
-  } else {
-    const delta = targetX - fromX;
-    const direction = delta >= 0 ? 1 : -1;
-    const distance = Math.abs(delta);
-    const stretch = distance > 1 ? 1.24 : 1;
+    indicator.style.left = targetLeft + "px";
+    indicator.style.transform = "perspective(760px) translateZ(0) rotateY(0deg) scaleX(1)";
+  } else if (typeof indicator.animate === "function") {
+    const delta = targetLeft - fromLeft;
+    const midLeft = fromLeft + delta * 0.52;
+    const nearLeft = targetLeft - direction * Math.min(7, Math.abs(delta) * 0.035);
 
-    indicator.style.transform = `translateX(${fromX}px) scaleX(1)`;
+    // Kapsul meluncur, meregang, membalik sesuai arah, lalu memantul ke posisi tab.
     indicator._slideAnimation = indicator.animate([
-      { offset: 0, transform: `translateX(${fromX}px) scaleX(1)`, filter: "brightness(1)" },
-      { offset: .28, transform: `translateX(${fromX + delta * .34}px) scaleX(${stretch})`, filter: "brightness(1.30)" },
-      { offset: .62, transform: `translateX(${fromX + delta * .82}px) scaleX(.88)`, filter: "brightness(1.16)" },
-      { offset: .84, transform: `translateX(${targetX + direction * 5}px) scaleX(1.06)`, filter: "brightness(1.08)" },
-      { offset: 1, transform: `translateX(${targetX}px) scaleX(1)`, filter: "brightness(1)" }
+      {
+        left: fromLeft + "px",
+        transform: "perspective(760px) translateZ(0) rotateY(0deg) scaleX(1)",
+        filter: "brightness(1)"
+      },
+      {
+        offset: 0.30,
+        left: midLeft + "px",
+        transform: `perspective(760px) translateZ(0) rotateY(${direction * 42}deg) scaleX(1.20)`,
+        filter: "brightness(1.24)"
+      },
+      {
+        offset: 0.68,
+        left: nearLeft + "px",
+        transform: `perspective(760px) translateZ(0) rotateY(${-direction * 19}deg) scaleX(.91)`,
+        filter: "brightness(1.13)"
+      },
+      {
+        offset: 0.86,
+        left: targetLeft + direction * 3 + "px",
+        transform: "perspective(760px) translateZ(0) rotateY(7deg) scaleX(1.05)",
+        filter: "brightness(1.08)"
+      },
+      {
+        left: targetLeft + "px",
+        transform: "perspective(760px) translateZ(0) rotateY(0deg) scaleX(1)",
+        filter: "brightness(1)"
+      }
     ], {
-      duration: 680,
-      easing: "cubic-bezier(.20,.82,.22,1)",
+      duration: 720,
+      easing: "cubic-bezier(.18,.82,.22,1)",
       fill: "forwards"
     });
 
-    indicator._currentX = targetX;
     indicator._slideAnimation.onfinish = () => {
-      indicator.style.transform = `translateX(${targetX}px) scaleX(1)`;
+      indicator.style.left = targetLeft + "px";
+      indicator.style.transform = "perspective(760px) translateZ(0) rotateY(0deg) scaleX(1)";
+      indicator.style.filter = "none";
       indicator._slideAnimation = null;
     };
 
     indicator.classList.remove("is-shining");
     void indicator.offsetWidth;
     indicator.classList.add("is-shining");
+  } else {
+    // Fallback untuk browser lama tanpa Web Animations API.
+    indicator.style.transition = "left .68s cubic-bezier(.18,.82,.22,1), transform .68s ease";
+    indicator.style.left = targetLeft + "px";
+    indicator.style.transform = `perspective(760px) rotateY(${direction * 24}deg) scaleX(1.12)`;
+    window.setTimeout(() => {
+      indicator.style.transform = "perspective(760px) rotateY(0deg) scaleX(1)";
+    }, 360);
   }
 
-  updateSummaryDetail(nextIndex > previousIndex ? 1 : -1);
+  updateSummaryDetail(direction);
 }
 
 function updateSummaryDetail(direction = 0) {
