@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#dce9df">
-<title>HDR Ledger - Keuangan</title>
+<title>DOMPETQ - Catatan Keuangan</title>
 
 <style>
 :root {
@@ -38,17 +38,58 @@ body {
 
 header {
   margin-bottom: 25px;
+  text-align: center;
+  padding: 12px 0 8px;
 }
 
-header h2 {
+.hero-logo {
+  display: block;
+  width: min(100%, 238px);
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: contain;
+  margin: 0 auto 14px;
+  padding: 7px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #07110b, #14251a);
+  border: 1px solid rgba(255,255,255,.42);
+  box-shadow: 0 9px 22px rgba(20, 55, 34, .24),
+              inset 0 1px 0 rgba(255,255,255,.16);
+}
+
+header h1 {
   margin: 0;
-  font-size: 23px;
+  font-size: 27px;
+  letter-spacing: 3px;
+  font-weight: 800;
+  color: var(--green-dark);
 }
 
 header p {
   color: var(--muted);
   font-size: 13px;
   margin-top: 7px;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 8px 0 20px;
+  margin-top: 4px;
+}
+
+.reset-btn {
+  width: 100%;
+  color: #fff;
+  background: linear-gradient(135deg, #c45f5f, #a83f3f);
+  box-shadow: 5px 5px 10px var(--shadow),
+             -5px -5px 10px var(--light);
+}
+
+.footer-note {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-top: 11px;
 }
 
 /* SALDO */
@@ -75,28 +116,111 @@ header p {
   overflow-wrap: anywhere;
 }
 
-.summary {
+/* NAVIGASI RINGKASAN SALDO */
+.summary-tabs {
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 3px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(13, 59, 35, .22);
+  border: 1px solid rgba(255,255,255,.14);
+  overflow: hidden;
+  isolation: isolate;
+  perspective: 760px;
 }
 
-.summary div {
-  background: #ffffff20;
-  padding: 13px;
-  border-radius: 13px;
+.summary-indicator {
+  position: absolute;
+  z-index: 0;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px - 9px) / 4);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255,255,255,.52), rgba(255,255,255,.20));
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow: 0 4px 14px rgba(8, 38, 22, .22),
+              inset 0 1px 0 rgba(255,255,255,.58),
+              inset 0 -1px 0 rgba(255,255,255,.12);
+  backdrop-filter: blur(16px) saturate(1.35);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  transform: translateX(calc(var(--tab-index, 0) * (100% + 3px))) scale(.98);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, filter;
+  pointer-events: none;
 }
 
-.summary span {
+.summary-indicator::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background: linear-gradient(110deg, transparent 18%, rgba(255,255,255,.58) 48%, transparent 76%);
+  transform: translateX(-135%);
+  opacity: .75;
+  pointer-events: none;
+}
+
+.summary-tab {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  padding: 12px 3px;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(255,255,255,.76);
+  font-size: 10px;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: color .25s ease;
+}
+
+.summary-tab[aria-selected="true"] {
+  color: #17472e;
+  text-shadow: 0 1px 0 rgba(255,255,255,.35);
+}
+
+.summary-tab:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
+.summary-detail {
+  min-height: 78px;
+  margin-top: 15px;
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.14);
+  border: 1px solid rgba(255,255,255,.12);
+  animation: summaryReveal .32s ease both;
+}
+
+.summary-detail span {
   display: block;
   font-size: 11px;
-  opacity: .8;
-  margin-bottom: 7px;
+  opacity: .82;
+  margin-bottom: 8px;
 }
 
-.summary strong {
-  font-size: 14px;
+.summary-detail strong {
+  display: block;
+  font-size: 21px;
   overflow-wrap: anywhere;
+}
+
+@keyframes summaryReveal {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .summary-indicator, .summary-tab, .summary-detail {
+    transition: none;
+    animation: none;
+  }
 }
 
 /* PANEL */
@@ -297,11 +421,6 @@ button:active {
 
 <div class="container">
 
-<header>
-  <h2>🌿 HDR Ledger</h2>
-  <p>Catatan keuangan Allen</p>
-</header>
-
 <!-- SALDO -->
 
 <section class="balance-card">
@@ -310,28 +429,21 @@ button:active {
 
   <div class="balance" id="balance">Rp0</div>
 
-  <div class="summary">
+  <div class="summary-tabs" id="summaryTabs" role="tablist" aria-label="Ringkasan saldo">
+    <span class="summary-indicator" id="summaryIndicator" aria-hidden="true"></span>
+    <button class="summary-tab" type="button" role="tab" id="tab-funds"
+      aria-controls="summaryDetail" aria-selected="true" onclick="selectSummaryTab(0)">Dana awal</button>
+    <button class="summary-tab" type="button" role="tab" id="tab-income"
+      aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(1)">Pemasukan</button>
+    <button class="summary-tab" type="button" role="tab" id="tab-expense"
+      aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(2)">Pengeluaran</button>
+    <button class="summary-tab" type="button" role="tab" id="tab-count"
+      aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(3)">Transaksi</button>
+  </div>
 
-    <div>
-      <span>Dana awal</span>
-      <strong id="funds">Rp0</strong>
-    </div>
-
-    <div>
-      <span>Total pemasukan</span>
-      <strong id="income">Rp0</strong>
-    </div>
-
-    <div>
-      <span>Total pengeluaran</span>
-      <strong id="expense">Rp0</strong>
-    </div>
-
-    <div>
-      <span>Jumlah transaksi</span>
-      <strong id="count">0</strong>
-    </div>
-
+  <div class="summary-detail" id="summaryDetail" role="tabpanel" aria-live="polite">
+    <span id="summaryLabel">Dana awal</span>
+    <strong id="summaryValue">Rp0</strong>
   </div>
 </section>
 
@@ -413,6 +525,13 @@ button:active {
   </div>
 
 </section>
+
+<footer class="app-footer">
+  <button class="reset-btn" type="button" onclick="resetAllData()">
+    RESET SEMUA DATA
+  </button>
+  <small class="footer-note">Menghapus dana awal dan seluruh riwayat transaksi.</small>
+</footer>
 
 </div>
 
@@ -502,6 +621,82 @@ function calculate() {
 
 }
 
+// TAB RINGKASAN SALDO
+let activeSummaryTab = 0;
+
+function selectSummaryTab(index) {
+  const nextIndex = Math.max(0, Math.min(3, Number(index) || 0));
+  const previousIndex = activeSummaryTab;
+  if (nextIndex === previousIndex) return;
+
+  const tabs = document.querySelectorAll(".summary-tab");
+  const track = document.getElementById("summaryTabs");
+  const indicator = document.getElementById("summaryIndicator");
+  const direction = nextIndex > previousIndex ? 1 : -1;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  activeSummaryTab = nextIndex;
+  tabs.forEach((tab, i) => {
+    const active = i === activeSummaryTab;
+    tab.setAttribute("aria-selected", String(active));
+    tab.tabIndex = active ? 0 : -1;
+  });
+
+  // Efek kaca 3D: panel miring ke arah gerakan, lalu memantul berlawanan
+  // sebelum kembali rata. Arah rotasi dibalik saat pengguna bergerak ke kiri.
+  const step = indicator.getBoundingClientRect().width + 3;
+  const fromX = previousIndex * step;
+  const toX = nextIndex * step;
+  track.style.setProperty("--tab-index", activeSummaryTab);
+
+  if (indicator._slideAnimation) indicator._slideAnimation.cancel();
+  if (reduceMotion) {
+    indicator.style.transform = "";
+  } else {
+    indicator.style.transform = `translateX(${fromX}px)`;
+    const tilt = direction * 30;
+    indicator._slideAnimation = indicator.animate([
+      { transform: `translateX(${fromX}px) rotateY(0deg) scaleX(1)`, filter: "brightness(1)" },
+      { offset: 0.32, transform: `translateX(${fromX + (toX - fromX) * 0.42}px) rotateY(${tilt}deg) scaleX(.84)`, filter: "brightness(1.24)" },
+      { offset: 0.68, transform: `translateX(${fromX + (toX - fromX) * 0.82}px) rotateY(${-tilt * .42}deg) scaleX(1.08)`, filter: "brightness(1.12)" },
+      { transform: `translateX(${toX}px) rotateY(0deg) scaleX(1)`, filter: "brightness(1)" }
+    ], {
+      duration: 720,
+      easing: "cubic-bezier(.2,.82,.22,1)",
+      fill: "none"
+    });
+    indicator._slideAnimation.onfinish = () => {
+      indicator.style.transform = "";
+      indicator._slideAnimation = null;
+    };
+  }
+
+  updateSummaryDetail(direction);
+}
+
+function updateSummaryDetail(direction = 0) {
+  const detail = document.getElementById("summaryDetail");
+  const total = calculate();
+  const summaries = [
+    { label: "Dana awal", value: rupiah(data.funds) },
+    { label: "Total pemasukan", value: rupiah(total.income) },
+    { label: "Total pengeluaran", value: rupiah(total.expense) },
+    { label: "Jumlah transaksi", value: String(data.transactions.length) }
+  ];
+
+  document.getElementById("summaryLabel").textContent =
+    summaries[activeSummaryTab].label;
+  document.getElementById("summaryValue").textContent =
+    summaries[activeSummaryTab].value;
+
+  if (direction && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    detail.animate([
+      { opacity: 0, transform: `translateX(${direction * 16}px) rotateY(${direction * -8}deg)` },
+      { opacity: 1, transform: "translateX(0) rotateY(0deg)" }
+    ], { duration: 360, easing: "cubic-bezier(.2,.8,.2,1)" });
+  }
+}
+
 // TAMPILKAN DATA
 
 function render() {
@@ -511,17 +706,7 @@ function render() {
   document.getElementById("balance").textContent =
     rupiah(total.balance);
 
-  document.getElementById("funds").textContent =
-    rupiah(data.funds);
-
-  document.getElementById("income").textContent =
-    rupiah(total.income);
-
-  document.getElementById("expense").textContent =
-    rupiah(total.expense);
-
-  document.getElementById("count").textContent =
-    data.transactions.length;
+  updateSummaryDetail();
 
   document.getElementById("startingFunds").value =
     data.funds || "";
@@ -680,9 +865,49 @@ function deleteTransaction(id) {
 
 }
 
+// RESET SELURUH DATA
+function resetAllData() {
+
+  const confirmed = confirm(
+    "PERINGATAN!\n\nSemua data DOMPETQ akan dihapus permanen, termasuk dana awal dan seluruh riwayat transaksi.\n\nApakah Anda yakin ingin melanjutkan?"
+  );
+
+  if (!confirmed) return;
+
+  // Hapus data tersimpan dan kembalikan aplikasi ke kondisi awal.
+  localStorage.removeItem(KEY);
+
+  data = {
+    funds: 0,
+    transactions: []
+  };
+
+  document.getElementById("description").value = "";
+  document.getElementById("amount").value = "";
+
+  render();
+  alert("Semua data berhasil direset.");
+}
+
+// Navigasi tab dapat dioperasikan dengan tombol panah keyboard.
+document.getElementById("summaryTabs").addEventListener("keydown", event => {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  event.preventDefault();
+
+  let next = activeSummaryTab;
+  if (event.key === "ArrowRight") next = (activeSummaryTab + 1) % 4;
+  if (event.key === "ArrowLeft") next = (activeSummaryTab + 3) % 4;
+  if (event.key === "Home") next = 0;
+  if (event.key === "End") next = 3;
+
+  selectSummaryTab(next);
+  document.querySelectorAll(".summary-tab")[next].focus();
+});
+
 // JALANKAN APLIKASI
 
 load();
+selectSummaryTab(0);
 render();
 
 </script>
