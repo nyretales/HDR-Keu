@@ -116,166 +116,121 @@ header p {
   overflow-wrap: anywhere;
 }
 
-/* PREMIUM GLASS NAVIGATION */
+/* LIQUID NEON WAVE NAVIGATION — inspired by Glassy Navigation Tabs V5 */
 .summary-tabs {
-  --nav-gap: 4px;
+  --nav-gap: 0px;
   position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--nav-gap);
-  padding: 5px;
-  border-radius: 18px;
+  gap: 0;
+  padding: 3px 4px 5px;
+  min-height: 66px;
+  border-radius: 40px;
   background:
-    linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.035)),
-    rgba(7, 20, 15, .36);
-  border: 1px solid rgba(255,255,255,.22);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.18),
-    0 10px 26px rgba(4,24,14,.20);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  backdrop-filter: blur(22px) saturate(1.5);
+    linear-gradient(180deg, rgba(255,255,255,.105), rgba(255,255,255,.025)),
+    rgba(26, 35, 30, .82);
+  border: 1px solid rgba(255,255,255,.26);
+  box-shadow: 0 12px 28px rgba(10,35,20,.22),
+              inset 0 1px 0 rgba(255,255,255,.23),
+              inset 0 -1px 0 rgba(0,0,0,.12);
+  -webkit-backdrop-filter: blur(20px) saturate(1.35);
+  backdrop-filter: blur(20px) saturate(1.35);
   overflow: hidden;
   isolation: isolate;
-  perspective: 1100px;
-  transform-style: preserve-3d;
   touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
 }
-
-.summary-indicator {
-  position: absolute;
-  z-index: 0;
-  top: 5px;
-  bottom: 5px;
-  left: 5px;
-  width: calc((100% - 10px - 12px) / 4);
-  border-radius: 13px;
-  background:
-    radial-gradient(ellipse at 25% 0%, rgba(255,255,255,.88), transparent 62%),
-    linear-gradient(135deg, rgba(255,255,255,.86), rgba(224,238,255,.54) 48%, rgba(177,202,255,.38));
-  border: 1px solid rgba(255,255,255,.82);
-  box-shadow:
-    0 5px 18px rgba(0,0,0,.20),
-    0 0 18px rgba(190,210,255,.22),
-    inset 0 1px 1px rgba(255,255,255,.95),
-    inset 0 -1px 0 rgba(255,255,255,.28);
-  -webkit-backdrop-filter: blur(18px) saturate(1.8);
-  backdrop-filter: blur(18px) saturate(1.8);
-  transform: translate3d(0,0,0);
-  transform-origin: center center;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: left, transform, filter;
-  pointer-events: none;
-  transition: left 620ms cubic-bezier(.20,1.18,.32,1);
+.summary-wave {
+  position:absolute;
+  z-index:0;
+  inset:0;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  pointer-events:none;
 }
-
-.summary-indicator::before {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  background: linear-gradient(180deg, rgba(255,255,255,.42), transparent 58%);
-  pointer-events: none;
+.summary-wave .wave-soft {
+  fill:none; stroke:rgba(75,255,220,.30); stroke-width:8;
+  stroke-linecap:round; stroke-linejoin:round;
+  filter:blur(4px);
 }
-
-.summary-indicator::after {
-  content: "";
-  position: absolute;
-  top: 1px;
-  bottom: 1px;
-  left: -65%;
-  width: 48%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.92), transparent);
-  opacity: 0;
-  transform: skewX(-18deg);
-  pointer-events: none;
+.summary-wave .wave-glow {
+  fill:none; stroke:#54ffe0; stroke-width:4;
+  stroke-linecap:round; stroke-linejoin:round;
+  filter:drop-shadow(0 0 3px #59ffe5) drop-shadow(0 0 7px rgba(46,255,218,.95));
 }
-
-.summary-indicator.is-shining::after {
-  animation: glassSheen 650ms ease-out both;
+.summary-wave .wave-core {
+  fill:none; stroke:#c9fff5; stroke-width:1.25;
+  stroke-linecap:round; stroke-linejoin:round;
+  opacity:.95;
 }
-
-@keyframes glassSheen {
-  0% { left: -65%; opacity: 0; }
-  22% { opacity: .9; }
-  100% { left: 125%; opacity: 0; }
+.summary-tabs::after {
+  content:"";
+  position:absolute; z-index:0; left:0; right:0; bottom:3px;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(91,255,225,.28) 8%, rgba(91,255,225,.75) 50%, rgba(91,255,225,.28) 92%, transparent);
+  box-shadow:0 0 8px rgba(68,255,220,.42);
+  pointer-events:none;
 }
-
 .summary-tab {
-  position: relative;
-  z-index: 1;
-  min-width: 0;
-  padding: 13px 2px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: rgba(255,255,255,.78);
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.15;
-  white-space: nowrap;
-  text-align: center;
-  transition: color 220ms ease, text-shadow 220ms ease, transform 220ms ease;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  position:relative;
+  z-index:1;
+  min-width:0;
+  min-height:56px;
+  padding:17px 2px 7px;
+  border:0;
+  border-radius:14px;
+  background:transparent;
+  color:rgba(255,255,255,.72);
+  font-size:10px;
+  font-weight:700;
+  line-height:1.15;
+  white-space:nowrap;
+  text-align:center;
+  transition:color 240ms ease, text-shadow 240ms ease, transform 240ms ease;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
 }
-
+.summary-tab svg {
+  display:block;
+  width:25px;
+  height:25px;
+  margin:0 auto;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.9;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.18));
+  transition:transform 220ms ease, filter 220ms ease;
+}
+.summary-tab[aria-selected="true"] svg {
+  transform:translateY(-1px) scale(1.08);
+  filter:drop-shadow(0 0 5px rgba(82,255,224,.72));
+}
 .summary-tab[aria-selected="true"] {
-  color: #152d21;
-  text-shadow: 0 1px 0 rgba(255,255,255,.48);
+  color:#eafffa;
+  text-shadow:0 0 8px rgba(82,255,224,.8), 0 0 16px rgba(82,255,224,.48);
 }
-
-.summary-tab:active {
-  transform: scale(.94);
-}
-
-.summary-tab:focus-visible {
-  outline: 2px solid rgba(255,255,255,.95);
-  outline-offset: -3px;
-}
-
+.summary-tab:active { transform:scale(.94); }
+.summary-tab:focus-visible { outline:2px solid rgba(111,255,229,.9); outline-offset:-4px; }
 .summary-detail {
-  min-height: 82px;
-  margin-top: 15px;
-  padding: 14px 16px;
-  border-radius: 17px;
-  background:
-    linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.07)),
-    rgba(9, 38, 23, .16);
-  border: 1px solid rgba(255,255,255,.20);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 20px rgba(8,35,20,.12);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-  overflow: hidden;
+  min-height:82px; margin-top:15px; padding:14px 16px; border-radius:17px;
+  background:linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.07)), rgba(9,38,23,.16);
+  border:1px solid rgba(255,255,255,.20);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 8px 20px rgba(8,35,20,.12);
+  -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); overflow:hidden;
 }
-
-.summary-detail span {
-  display: block;
-  font-size: 11px;
-  opacity: .84;
-  margin-bottom: 8px;
+.summary-detail span { display:block; font-size:11px; opacity:.84; margin-bottom:8px; }
+.summary-detail strong { display:block; font-size:21px; overflow-wrap:anywhere; letter-spacing:.2px; }
+@media(max-width:380px) {
+  .summary-tabs { min-height:62px; border-radius:35px; }
+  .summary-tab { min-height:54px; font-size:9px; padding:15px 1px 6px; }
 }
-
-.summary-detail strong {
-  display: block;
-  font-size: 21px;
-  overflow-wrap: anywhere;
-  letter-spacing: .2px;
+@media(prefers-reduced-motion:reduce) {
+  .summary-tab,.summary-detail { transition:none!important; animation:none!important; }
 }
-
-@media (max-width: 380px) {
-  .summary-tab { font-size: 9px; padding: 12px 1px; }
-  .summary-tabs { --nav-gap: 3px; gap: var(--nav-gap); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .summary-indicator, .summary-tab, .summary-detail { transition: none !important; animation: none !important; }
-}
-
 /* PANEL */
 
 .panel {
@@ -483,43 +438,33 @@ button:active {
   <div class="balance" id="balance">Rp0</div>
 
   <div class="summary-tabs" id="summaryTabs" role="tablist" aria-label="Ringkasan saldo">
-    <span class="summary-indicator" id="summaryIndicator" aria-hidden="true"></span>
+    <svg class="summary-wave" id="summaryWave" aria-hidden="true" viewBox="0 0 400 66" preserveAspectRatio="none">
+      <path class="wave-soft" id="waveSoft" d="M 0 58 L 400 58"></path>
+      <path class="wave-glow" id="waveGlow" d="M 0 58 L 400 58"></path>
+      <path class="wave-core" id="waveCore" d="M 0 58 L 400 58"></path>
+    </svg>
     <button class="summary-tab" type="button" role="tab" id="tab-funds"
-      aria-controls="summaryDetail" aria-selected="true" onclick="selectSummaryTab(0)">Dana awal</button>
+      aria-label="Dana awal" title="Dana awal" aria-controls="summaryDetail" aria-selected="true" onclick="selectSummaryTab(0)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"></rect><path d="M3 9h18M7 15h.01M16 13h5"></path><path d="M6 6V4.8A1.8 1.8 0 0 1 7.8 3H19"></path></svg>
+    </button>
     <button class="summary-tab" type="button" role="tab" id="tab-income"
-      aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(1)">Pemasukan</button>
+      aria-label="Pemasukan" title="Pemasukan" aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(1)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17 10 11l4 4 6-8"></path><path d="M14 7h6v6"></path></svg>
+    </button>
     <button class="summary-tab" type="button" role="tab" id="tab-expense"
-      aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(2)">Pengeluaran</button>
+      aria-label="Pengeluaran" title="Pengeluaran" aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(2)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 7 6 6 4-4 6 8"></path><path d="M14 17h6v-6"></path></svg>
+    </button>
     <button class="summary-tab" type="button" role="tab" id="tab-count"
-      aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(3)">Transaksi</button>
+      aria-label="Transaksi" title="Transaksi" aria-controls="summaryDetail" aria-selected="false" onclick="selectSummaryTab(3)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l4 4v14H7z"></path><path d="M15 3v5h5M10 12h6M10 16h6"></path></svg>
+    </button>
   </div>
 
   <div class="summary-detail" id="summaryDetail" role="tabpanel" aria-live="polite">
     <span id="summaryLabel">Dana awal</span>
     <strong id="summaryValue">Rp0</strong>
   </div>
-</section>
-
-<!-- DANA AWAL -->
-
-<section class="panel">
-
-  <h3>Dana yang disiapkan</h3>
-
-  <label>JUMLAH DANA (RP)</label>
-
-  <input
-    type="number"
-    id="startingFunds"
-    min="0"
-    step="1"
-    placeholder=""
-  >
-
-  <button class="primary" onclick="saveFunds()">
-    Simpan dana awal
-  </button>
-
 </section>
 
 <!-- TAMBAH TRANSAKSI -->
@@ -578,6 +523,29 @@ button:active {
   </div>
 
 </section>
+
+<!-- DANA AWAL -->
+
+<section class="panel">
+
+  <h3>Dana yang disiapkan</h3>
+
+  <label>JUMLAH DANA (RP)</label>
+
+  <input
+    type="number"
+    id="startingFunds"
+    min="0"
+    step="1"
+    placeholder=""
+  >
+
+  <button class="primary" onclick="saveFunds()">
+    Simpan dana awal
+  </button>
+
+</section>
+
 
 <footer class="app-footer">
   <button class="reset-btn" type="button" onclick="resetAllData()">
@@ -680,196 +648,99 @@ let activeSummaryTab = 0;
 function selectSummaryTab(index, followPointer = false) {
   const nextIndex = Math.max(0, Math.min(3, Number(index) || 0));
   const previousIndex = activeSummaryTab;
-  if (nextIndex === previousIndex && !followPointer) return;
-
   const tabs = Array.from(document.querySelectorAll(".summary-tab"));
-  const indicator = document.getElementById("summaryIndicator");
-  const track = document.getElementById("summaryTabs");
-  const direction = nextIndex > previousIndex ? 1 : -1;
-
+  if (!tabs.length) return;
   activeSummaryTab = nextIndex;
   tabs.forEach((tab, i) => {
     const active = i === nextIndex;
     tab.setAttribute("aria-selected", String(active));
     tab.tabIndex = active ? 0 : -1;
   });
-
-  const targetLeft = tabs[nextIndex].offsetLeft;
-
-  // Live-follow mode: capsule tracks the finger/mouse continuously, without
-  // the delayed click animation that made the previous versions feel unresponsive.
-  if (followPointer) {
-    // The capsule tracks the finger/mouse continuously, while each tab boundary
-    // crossing triggers a direction-aware 3D reverse flip.
-    indicator.style.transition = "left 85ms cubic-bezier(.22,.72,.25,1)";
-    indicator.style.left = `${targetLeft}px`;
-    if (previousIndex !== nextIndex) {
-      playSummaryReverseFlip(direction);
-      updateSummaryDetail(direction);
-    } else {
-      updateSummaryDetail(0);
-    }
-    return;
+  if (window.moveSummaryWaveToTab) window.moveSummaryWaveToTab(nextIndex, !followPointer);
+  if (previousIndex !== nextIndex) {
+    updateSummaryDetail(nextIndex > previousIndex ? 1 : -1);
   }
-
-  if (previousIndex === nextIndex) return;
-
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (indicator._positionTimer) {
-    clearTimeout(indicator._positionTimer);
-    indicator._positionTimer = null;
-  }
-  if (indicator._flipAnimation) {
-    indicator._flipAnimation.cancel();
-    indicator._flipAnimation = null;
-  }
-
-  if (reduceMotion) {
-    indicator.style.transition = "none";
-    indicator.style.left = `${targetLeft}px`;
-    indicator.style.transform = "none";
-  } else {
-    const currentLeft = parseFloat(getComputedStyle(indicator).left) || 5;
-    const delta = targetLeft - currentLeft;
-    const sign = delta >= 0 ? 1 : -1;
-
-    indicator.style.transition = "left 620ms cubic-bezier(.20,1.18,.32,1)";
-    indicator.style.left = `${targetLeft}px`;
-
-    if (typeof indicator.animate === "function") {
-      indicator._flipAnimation = indicator.animate([
-        { transform: "perspective(700px) rotateY(0deg) scaleX(1)", filter: "brightness(1)" },
-        { offset: .30, transform: `perspective(700px) rotateY(${sign * 30}deg) scaleX(1.10)`, filter: "brightness(1.22)" },
-        { offset: .68, transform: `perspective(700px) rotateY(${-sign * 14}deg) scaleX(.95)`, filter: "brightness(1.10)" },
-        { transform: "perspective(700px) rotateY(0deg) scaleX(1)", filter: "brightness(1)" }
-      ], {
-        duration: 620,
-        easing: "cubic-bezier(.2,.8,.2,1)",
-        fill: "none"
-      });
-    }
-
-    playSummaryReverseFlip(direction);
-  }
-
-  updateSummaryDetail(direction);
 }
 
-// Reverse-flip motion for the glass capsule. The slide position follows the
-// pointer/finger; this animation independently flips the capsule around Y.
-function playSummaryReverseFlip(direction) {
-  const indicator = document.getElementById("summaryIndicator");
-  if (!indicator || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-  if (indicator._flipAnimation) {
-    const computed = getComputedStyle(indicator);
-    indicator._flipAnimation.cancel();
-    indicator._flipAnimation = null;
-  }
-
-  const sign = direction >= 0 ? 1 : -1;
-  if (typeof indicator.animate === "function") {
-    indicator._flipAnimation = indicator.animate([
-      { transform: "perspective(900px) rotateY(0deg) rotateX(0deg) scaleX(1)", filter: "brightness(1)" },
-      { offset: .24, transform: `perspective(900px) rotateY(${sign * 78}deg) rotateX(5deg) scaleX(.78)`, filter: "brightness(1.34)" },
-      { offset: .52, transform: `perspective(900px) rotateY(${sign * 178}deg) rotateX(0deg) scaleX(.90)`, filter: "brightness(1.16)" },
-      { offset: .76, transform: `perspective(900px) rotateY(${sign * 300}deg) rotateX(-3deg) scaleX(1.10)`, filter: "brightness(1.22)" },
-      { offset: 1, transform: `perspective(900px) rotateY(${sign * 360}deg) rotateX(0deg) scaleX(1)`, filter: "brightness(1)" }
-    ], {
-      duration: 460,
-      easing: "cubic-bezier(.22,.78,.24,1)",
-      fill: "none"
-    });
-    indicator._flipAnimation.onfinish = () => {
-      indicator._flipAnimation = null;
-    };
-  } else {
-    // CSS fallback: still visibly flips on browsers without the Web Animations API.
-    indicator.style.transition = "transform 220ms ease";
-    indicator.style.transform = `perspective(900px) rotateY(${sign * 22}deg) scaleX(.88)`;
-    clearTimeout(indicator._flipFallbackTimer);
-    indicator._flipFallbackTimer = setTimeout(() => {
-      indicator.style.transform = "perspective(900px) rotateY(0deg) scaleX(1)";
-    }, 120);
-  }
-
-  indicator.classList.remove("is-shining");
-  void indicator.offsetWidth;
-  indicator.classList.add("is-shining");
-}
-
-// Pointer-follow navigation:
-// - Desktop mouse: the glass capsule follows the pointer while it moves over the rail.
-// - Mobile touch: drag a finger horizontally across the rail; the active tab follows it.
-// - A normal tap/click still works through the tab buttons' onclick handlers.
 function initSummaryPointerFollow() {
   const track = document.getElementById("summaryTabs");
   const tabs = Array.from(document.querySelectorAll(".summary-tab"));
-  if (!track || !tabs.length || track.dataset.pointerFollowReady === "true") return;
-  track.dataset.pointerFollowReady = "true";
+  const wave = document.getElementById("summaryWave");
+  if (!track || !wave || !tabs.length || track.dataset.liquidWaveReady === "true") return;
+  track.dataset.liquidWaveReady = "true";
 
-  let dragging = false;
-  let activePointerId = null;
-  let lastIndex = activeSummaryTab;
-
-  const indexAt = (clientX) => {
-    let closest = 0;
-    let minDistance = Infinity;
-    tabs.forEach((tab, i) => {
-      const rect = tab.getBoundingClientRect();
-      const center = rect.left + rect.width / 2;
-      const distance = Math.abs(clientX - center);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closest = i;
-      }
+  let currentX = 0, targetX = 0, raf = 0;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const width = () => track.clientWidth;
+  const centerFor = (index) => {
+    const r = tabs[index].getBoundingClientRect();
+    const tr = track.getBoundingClientRect();
+    return r.left + r.width / 2 - tr.left;
+  };
+  const makePath = (x) => {
+    const w = width(), base = 58, peak = 13, half = Math.min(39, w / 8);
+    const left = Math.max(0, x - half), right = Math.min(w, x + half);
+    const topL = Math.max(0, x - 13), topR = Math.min(w, x + 13);
+    return `M 0 ${base} L ${left} ${base} C ${left+18} ${base}, ${topL-13} ${peak}, ${topL} ${peak} L ${topR} ${peak} C ${topR+13} ${peak}, ${right-18} ${base}, ${right} ${base} L ${w} ${base}`;
+  };
+  const paint = () => {
+    wave.setAttribute("viewBox", `0 0 ${Math.max(1, width())} 66`);
+    const d = makePath(currentX);
+    ["waveSoft","waveGlow","waveCore"].forEach(id => {
+      const p = document.getElementById(id);
+      if (p) p.setAttribute("d", d);
     });
-    return closest;
   };
-
-  track.addEventListener("pointerdown", (event) => {
-    if (event.pointerType === "touch" || event.pointerType === "pen") {
-      dragging = true;
-      activePointerId = event.pointerId;
-      lastIndex = indexAt(event.clientX);
-      track.setPointerCapture?.(event.pointerId);
-      selectSummaryTab(lastIndex, true);
+  const animate = () => {
+    const delta = targetX - currentX;
+    currentX += delta * (reduced ? 1 : .19);
+    if (Math.abs(delta) < .25) currentX = targetX;
+    paint();
+    if (Math.abs(targetX-currentX) > .25) raf = requestAnimationFrame(animate);
+    else raf = 0;
+  };
+  window.moveSummaryWaveToTab = (index) => {
+    targetX = centerFor(index);
+    if (reduced) currentX = targetX;
+    if (!raf) raf = requestAnimationFrame(animate);
+  };
+  const indexAt = (clientX) => {
+    let best = 0, distance = Infinity;
+    tabs.forEach((tab,i) => {
+      const r=tab.getBoundingClientRect(), d=Math.abs(clientX-(r.left+r.width/2));
+      if(d<distance){distance=d;best=i;}
+    });
+    return best;
+  };
+  let dragging=false, pointerId=null, last=activeSummaryTab;
+  track.addEventListener("pointerenter", e => {
+    if(e.pointerType==="mouse") selectSummaryTab(indexAt(e.clientX), true);
+  });
+  track.addEventListener("pointermove", e => {
+    if(e.pointerType==="mouse" || (dragging && e.pointerId===pointerId)) {
+      const i=indexAt(e.clientX);
+      if(i!==last){last=i;selectSummaryTab(i,true);}
     }
   });
-
-  track.addEventListener("pointermove", (event) => {
-    const isMouseHover = event.pointerType === "mouse";
-    const isActiveDrag = dragging && event.pointerId === activePointerId;
-    if (!isMouseHover && !isActiveDrag) return;
-
-    const next = indexAt(event.clientX);
-    if (next !== lastIndex) {
-      lastIndex = next;
-      selectSummaryTab(next, true);
+  track.addEventListener("pointerdown", e => {
+    if(e.pointerType!=="mouse"){
+      dragging=true;pointerId=e.pointerId;last=indexAt(e.clientX);
+      track.setPointerCapture?.(e.pointerId);selectSummaryTab(last,true);
     }
   });
-
-  const finishPointer = (event) => {
-    if (event.pointerId !== activePointerId) return;
-    dragging = false;
-    activePointerId = null;
-  };
-  track.addEventListener("pointerup", finishPointer);
-  track.addEventListener("pointercancel", finishPointer);
-  track.addEventListener("lostpointercapture", finishPointer);
-
-  // Keyboard accessibility remains available.
-  track.addEventListener("keydown", (event) => {
-    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-    event.preventDefault();
-    let next = activeSummaryTab;
-    if (event.key === "ArrowLeft") next = Math.max(0, next - 1);
-    if (event.key === "ArrowRight") next = Math.min(tabs.length - 1, next + 1);
-    if (event.key === "Home") next = 0;
-    if (event.key === "End") next = tabs.length - 1;
-    tabs[next].focus();
-    selectSummaryTab(next);
+  const finish=e=>{if(e.pointerId===pointerId){dragging=false;pointerId=null;}};
+  track.addEventListener("pointerup",finish);
+  track.addEventListener("pointercancel",finish);
+  track.addEventListener("lostpointercapture",finish);
+  track.addEventListener("pointerleave", e => {
+    if(e.pointerType==="mouse") {
+      // Keep the wave parked on the selected tab when the pointer leaves.
+      selectSummaryTab(activeSummaryTab, true);
+    }
   });
+  window.addEventListener("resize",()=>{targetX=centerFor(activeSummaryTab);currentX=targetX;paint();});
+  currentX=targetX=centerFor(activeSummaryTab);
+  paint();
 }
 
 function updateSummaryDetail(direction = 0) {
@@ -1109,23 +980,7 @@ document.getElementById("summaryTabs").addEventListener("keydown", event => {
 load();
 selectSummaryTab(0);
 
-// Posisi awal kapsul navigasi sesuai tab pertama.
-window.addEventListener("load", () => {
-  const indicator = document.getElementById("summaryIndicator");
-  const firstTab = document.querySelector(".summary-tab");
-  const track = document.getElementById("summaryTabs");
-  if (indicator && firstTab && track) {
-    indicator.style.left = `${firstTab.offsetLeft}px`;
-  }
-});
-
-
-window.addEventListener("load", () => {
-  const indicator = document.getElementById("summaryIndicator");
-  const firstTab = document.querySelector(".summary-tab");
-  if (indicator && firstTab) indicator.style.left = `${firstTab.offsetLeft}px`;
-  initSummaryPointerFollow();
-});
+window.addEventListener("load", initSummaryPointerFollow);
 
 render();
 
