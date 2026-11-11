@@ -656,7 +656,12 @@ function selectSummaryTab(index, followPointer = false) {
     tab.setAttribute("aria-selected", String(active));
     tab.tabIndex = active ? 0 : -1;
   });
-  if (window.moveSummaryWaveToTab) window.moveSummaryWaveToTab(nextIndex, !followPointer);
+
+  // During hover/drag the wave follows the actual pointer coordinate,
+  // not the center of each tab. Click/keyboard navigation eases to tab center.
+  if (!followPointer && window.moveSummaryWaveToTab) {
+    window.moveSummaryWaveToTab(nextIndex);
+  }
   if (previousIndex !== nextIndex) {
     updateSummaryDetail(nextIndex > previousIndex ? 1 : -1);
   }
@@ -693,17 +698,24 @@ function initSummaryPointerFollow() {
   };
   const animate = () => {
     const delta = targetX - currentX;
-    currentX += delta * (reduced ? 1 : .19);
-    if (Math.abs(delta) < .25) currentX = targetX;
+    // A damped easing step avoids abrupt jumps while remaining responsive.
+    currentX += delta * (reduced ? 1 : .14);
+    if (Math.abs(delta) < .12) currentX = targetX;
     paint();
-    if (Math.abs(targetX-currentX) > .25) raf = requestAnimationFrame(animate);
+    if (Math.abs(targetX-currentX) > .12) raf = requestAnimationFrame(animate);
     else raf = 0;
   };
-  window.moveSummaryWaveToTab = (index) => {
-    targetX = centerFor(index);
-    if (reduced) currentX = targetX;
-    if (!raf) raf = requestAnimationFrame(animate);
+  const setWaveTarget = (x) => {
+    targetX = Math.max(0, Math.min(width(), x));
+    if (reduced) {
+      currentX = targetX;
+      paint();
+    } else if (!raf) {
+      raf = requestAnimationFrame(animate);
+    }
   };
+  window.moveSummaryWaveToTab = (index) => setWaveTarget(centerFor(index));
+
   const indexAt = (clientX) => {
     let best = 0, distance = Infinity;
     tabs.forEach((tab,i) => {
@@ -712,20 +724,28 @@ function initSummaryPointerFollow() {
     });
     return best;
   };
-  let dragging=false, pointerId=null, last=activeSummaryTab;
+  const followPointer = (clientX) => {
+    const rect = track.getBoundingClientRect();
+    setWaveTarget(clientX - rect.left);
+    const i = indexAt(clientX);
+    if (i !== activeSummaryTab) selectSummaryTab(i, true);
+  };
+
+  let dragging=false, pointerId=null;
   track.addEventListener("pointerenter", e => {
-    if(e.pointerType==="mouse") selectSummaryTab(indexAt(e.clientX), true);
+    if(e.pointerType==="mouse") followPointer(e.clientX);
   });
   track.addEventListener("pointermove", e => {
     if(e.pointerType==="mouse" || (dragging && e.pointerId===pointerId)) {
-      const i=indexAt(e.clientX);
-      if(i!==last){last=i;selectSummaryTab(i,true);}
+      followPointer(e.clientX);
     }
   });
   track.addEventListener("pointerdown", e => {
     if(e.pointerType!=="mouse"){
-      dragging=true;pointerId=e.pointerId;last=indexAt(e.clientX);
-      track.setPointerCapture?.(e.pointerId);selectSummaryTab(last,true);
+      dragging=true;
+      pointerId=e.pointerId;
+      track.setPointerCapture?.(e.pointerId);
+      followPointer(e.clientX);
     }
   });
   const finish=e=>{if(e.pointerId===pointerId){dragging=false;pointerId=null;}};
@@ -733,12 +753,13 @@ function initSummaryPointerFollow() {
   track.addEventListener("pointercancel",finish);
   track.addEventListener("lostpointercapture",finish);
   track.addEventListener("pointerleave", e => {
-    if(e.pointerType==="mouse") {
-      // Keep the wave parked on the selected tab when the pointer leaves.
-      selectSummaryTab(activeSummaryTab, true);
-    }
+    if(e.pointerType==="mouse") setWaveTarget(centerFor(activeSummaryTab));
   });
-  window.addEventListener("resize",()=>{targetX=centerFor(activeSummaryTab);currentX=targetX;paint();});
+  window.addEventListener("resize",()=>{
+    targetX=centerFor(activeSummaryTab);
+    currentX=targetX;
+    paint();
+  });
   currentX=targetX=centerFor(activeSummaryTab);
   paint();
 }
